@@ -3,10 +3,11 @@ import { useDiagram } from "@/hooks/useDiagram";
 import BloomRenderer from "@/components/BloomRenderer";
 import { createArrowDiagram } from "@/diagrams/arrowDiagram";
 import { createCircleDiagram } from "@/diagrams/circleDiagram";
+import { createEigenDiagram } from "@/diagrams/eigenDiagram";
 import { cn } from "@/lib/utils";
 
 // 다이어그램 타입 정의
-type DiagramType = "arrow" | "circle";
+type DiagramType = "arrow" | "circle" | "eigen";
 
 interface DiagramConfig {
   id: DiagramType;
@@ -35,6 +36,12 @@ const DiagramGallery: React.FC = () => {
       title: "원형 배치 다이어그램", 
       description: "중심 원 주위에 위성 원들이 배치된 구조",
       buildFunction: createCircleDiagram,
+    },
+    {
+      id: "eigen",
+      title: "고유벡터 다이어그램",
+      description: "선형 변환의 고유벡터와 고유공간을 시각화",
+      buildFunction: createEigenDiagram,
     },
   ];
 
@@ -151,8 +158,14 @@ const DiagramGallery: React.FC = () => {
               // 상호작용 효과
               "hover:border-blue-300 transition-colors duration-200"
             )}
-            width={selectedDiagram === "circle" ? 500 : 400}
-            height={selectedDiagram === "circle" ? 500 : 400}
+            width={
+              selectedDiagram === "circle" ? 500 : 
+              selectedDiagram === "eigen" ? 500 : 400
+            }
+            height={
+              selectedDiagram === "circle" ? 500 : 
+              selectedDiagram === "eigen" ? 400 : 400
+            }
           />
         </div>
 
@@ -173,7 +186,11 @@ const DiagramGallery: React.FC = () => {
               // 상호작용 안내
               "text-sm text-gray-500"
             )}>
-              💡 원을 드래그하여 이동시킬 수 있습니다
+              💡 {
+                selectedDiagram === "eigen" 
+                  ? "기저벡터와 점을 드래그하여 선형 변환을 조작할 수 있습니다"
+                  : "원을 드래그하여 이동시킬 수 있습니다"
+              }
             </p>
           )}
         </div>
