@@ -10,7 +10,7 @@ import { defineDomain } from "./domain";
  */
 export const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
     const {
-        Point, Segment, On, Perpendicular, Label,
+        Point, Segment, On, Perpendicular, Label, CircleRadius, Circumcircle,
     } = domain;
 
     // 점들 생성
@@ -24,6 +24,10 @@ export const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof d
 
     const G = Point();
 
+    const c = CircleRadius(G, F);
+
+    Circumcircle(A, B, C);
+
     // 선분들 생성
     const AB = Segment(A, B);
     const BC = Segment(B, C);
@@ -31,6 +35,9 @@ export const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof d
     Label(AB, "a");
     Label(BC, "b");
     Label(AC, "c");
+
+    const GF = Segment(G, F);
+    Label(GF, "r");
 
     // A에서 BC에 수직인 선분 AH 생성
     const AD = Segment(A, D);

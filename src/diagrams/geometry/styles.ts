@@ -24,6 +24,16 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
         });
     });
 
+    // Circle
+    // forall({ c: domain.Circle }, ({ c }) => {
+    //     c.icon = circle({
+    //         r: 100,
+    //         fillColor: [0.5, 0.5, 0.5, 0],
+    //         strokeColor: [0.5, 0.5, 0.5, 1],
+    //         strokeWidth: 1,
+    //     });
+    // });
+
     // Connects
     forallWhere(
         { s: domain.Edge, p: domain.Point, q: domain.Point },
@@ -38,7 +48,101 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
         }
     );
 
+    // CircleRadius
+    forallWhere(
+        { c: domain.Circle, o: domain.Point, r: domain.Point },
+        ({ c, o, r }) => domain.DrawCircleWithRadius.test(c, o, r),
+        ({ c, o, r }) => {
+            c.circle = circle({
+                r: bloom.ops.vdist(o.icon.center, r.icon.center),
+                fillColor: [0.5, 0.5, 0.5, 0],
+                center: o.icon.center,
+                strokeColor: [0.5, 0.5, 0.5, 1],
+                strokeWidth: 1,
+            })
+        }
+    );
 
+    // Circumcircle: 외접원 그리기
+    forallWhere(
+        { c: domain.Circle, p: domain.Point, q: domain.Point, r: domain.Point },
+        ({ c, p, q, r }) => domain.DrawCircumcircle.test(c, p, q, r),
+        ({ c, p, q, r }) => {
+            // 세 점의 좌표를 가져옴
+            const [x1, y1] = p.icon.center;
+            const [x2, y2] = q.icon.center;
+            const [x3, y3] = r.icon.center;
+            
+            // 외접원의 중심 계산 (수학적 공식 사용)
+            // D = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+            const d = bloom.mul(
+                2, 
+                bloom.add(
+                    bloom.mul(x1, bloom.sub(y2, y3)), 
+                    bloom.add(
+                        bloom.mul(x2, bloom.sub(y3, y1)), 
+                        bloom.mul(x3, bloom.sub(y1, y2))
+                    )
+                )
+            );
+            
+            // ux = ((x1² + y1²) * (y2 - y3) + (x2² + y2²) * (y3 - y1) + (x3² + y3²) * (y1 - y2)) / D
+            const ux = bloom.div(
+                bloom.add(
+                    bloom.mul(
+                        bloom.add(bloom.mul(x1, x1), bloom.mul(y1, y1)), 
+                        bloom.sub(y2, y3)
+                    ),
+                    bloom.add(
+                        bloom.mul(
+                            bloom.add(bloom.mul(x2, x2), bloom.mul(y2, y2)), 
+                            bloom.sub(y3, y1)
+                        ),
+                        bloom.mul(
+                            bloom.add(bloom.mul(x3, x3), bloom.mul(y3, y3)), 
+                            bloom.sub(y1, y2)
+                        )
+                    )
+                ), 
+                d
+            );
+            
+            // uy = ((x1² + y1²) * (x3 - x2) + (x2² + y2²) * (x1 - x3) + (x3² + y3²) * (x2 - x1)) / D
+            const uy = bloom.div(
+                bloom.add(
+                    bloom.mul(
+                        bloom.add(bloom.mul(x1, x1), bloom.mul(y1, y1)), 
+                        bloom.sub(x3, x2)
+                    ),
+                    bloom.add(
+                        bloom.mul(
+                            bloom.add(bloom.mul(x2, x2), bloom.mul(y2, y2)), 
+                            bloom.sub(x1, x3)
+                        ),
+                        bloom.mul(
+                            bloom.add(bloom.mul(x3, x3), bloom.mul(y3, y3)), 
+                            bloom.sub(x2, x1)
+                        )
+                    )
+                ), 
+                d
+            );
+            
+            const circumcenter = [ux, uy];
+            
+            // 외접원의 반지름 계산 (중심에서 임의의 점까지의 거리)
+            const circumradius = bloom.ops.vdist(circumcenter, p.icon.center);
+            
+            c.circle = circle({
+                r: circumradius,
+                fillColor: [0.5, 0.5, 0.5, 0],
+                center: circumcenter as [number, number],
+                strokeColor: [0.5, 0.5, 0.5, 1],
+                strokeWidth: 1,
+                ensureOnCanvas: false,
+            })
+        }
+    );
 
     // On
     forallWhere(
@@ -68,16 +172,6 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
             ensure(bloom.constraints.equal(dotProduct, 0));
         }
     );
-
-    // Point Label과 Segment 사이의 거리 제약조건
-    // forall({ s: domain.Edge, p: domain.Point }, ({ s, p }) => {
-    //     const v1 = bloom.ops.vsub(s.icon.start, s.icon.end);
-    //     const v2 = bloom.ops.vsub(p.icon.center, s.icon.start);
-
-    //     const dotProduct = bloom.ops.vdot(v1, v2);
-
-    //     ensure(bloom.constraints.greaterThan(dotProduct, 5));
-    // });
 
     forallWhere(
         { s: domain.Edge },
