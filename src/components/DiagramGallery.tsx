@@ -22,7 +22,7 @@ interface DiagramConfig {
  * useDiagram 훅과 BloomRenderer 컴포넌트의 재사용성을 시연
  */
 const DiagramGallery: React.FC = () => {
-  const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>("arrow");
+  const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>("geometry");
 
   // 다이어그램 설정 배열
   const diagrams: DiagramConfig[] = [

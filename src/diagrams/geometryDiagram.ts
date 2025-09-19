@@ -49,8 +49,10 @@ const defineDomain = (db: DiagramBuilder) => {
 
     const On = db.predicate();
 
+    const Label = db.predicate();
+
     return {
-        Point, Segment, SegmentAbstract, Connects, Perpendicular, On,
+        Point, Segment, SegmentAbstract, Connects, Perpendicular, On, Label,
     };
 };
 
@@ -65,7 +67,6 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
     const {
         Point, Segment, On, Perpendicular,
     } = domain;
-
 
     // 점들 생성
     const A = Point();
@@ -84,6 +85,11 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
     Perpendicular(BC, AH);
     On(H, BC);
 
+    A.name = "A";
+    B.name = "B";
+    C.name = "C";
+    H.name = "H";
+
 
     return {
         A, B, C, AB, BC, AC, AH, H, Perpendicular, On,
@@ -96,7 +102,7 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
  * 기하학적 도형들에 시각적 스타일을 적용합니다.
  */
 const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
-    const { ensure, forall, forallWhere, circle, line, text, polygon, layer } = db;
+    const { ensure, forall, forallWhere, circle, line, text, polygon, layer, equation, input, encourage } = db;
 
     forall({ p: domain.Point }, ({ p }) => {
         p.icon = circle({
@@ -104,6 +110,14 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
             fillColor: [0.5, 0.5, 0.5, 1],
             drag: true,
         });
+
+        p.text = equation({
+            string: p.name || "Unnamed",
+            fontSize: "12px",
+            fillColor: [0.5, 0.5, 0.5, 1],
+        });
+
+        ensure(bloom.constraints.equal(bloom.ops.vdist(p.icon.center, p.text.center), 15));
     });
 
     // Connects
@@ -111,7 +125,6 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
         { s: domain.SegmentAbstract, p: domain.Point, q: domain.Point },
         ({ s, p, q }) => domain.Connects.test(s, p, q),
         ({ s, p, q }) => {
-            console.log("Connects called--");
             s.icon = line({
                 start: p.icon.center,
                 end: q.icon.center,
@@ -120,6 +133,8 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
             });
         }
     );
+
+
 
     // On
     forallWhere(
@@ -149,6 +164,16 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
             ensure(bloom.constraints.equal(dotProduct, 0));
         }
     );
+
+    // Point Label과 Segment 사이의 거리 제약조건
+    // forall({ s: domain.SegmentAbstract, p: domain.Point }, ({ s, p }) => {
+    //     const v1 = bloom.ops.vsub(s.icon.start, s.icon.end);
+    //     const v2 = bloom.ops.vsub(p.icon.center, s.icon.start);
+
+    //     const dotProduct = bloom.ops.vdot(v1, v2);
+
+    //     ensure(bloom.constraints.greaterThan(dotProduct, 5));
+    // });
 };
 
 /**
