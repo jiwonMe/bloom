@@ -28,9 +28,17 @@ export const defineDomain = (db: DiagramBuilder) => {
 
     const On = db.predicate();
 
-    const Label = db.predicate();
+
+    const LabelPredicate = db.predicate();
+
+    const Label = (obj: Substance, label: string) => {
+        obj.label = label;
+        const labelPredicate = LabelPredicate(obj);
+        return labelPredicate;
+    };
+
 
     return {
-        Point, Segment, Edge, Connects, Perpendicular, On, Label,
+        Point, Segment, Edge, Connects, Perpendicular, On, Label, LabelPredicate
     };
 };

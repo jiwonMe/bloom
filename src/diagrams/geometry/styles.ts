@@ -13,23 +13,15 @@ type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
  * 기하학적 도형들에 시각적 스타일을 적용합니다.
  */
 export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
-    const { ensure, forall, forallWhere, circle, line, text, polygon, layer, equation, input, encourage } = db;
+    const { ensure, forall, forallWhere, circle, line, text, polygon, layer, equation, input, encourage, path } = db;
 
     // Point
     forall({ p: domain.Point }, ({ p }) => {
         p.icon = circle({
             r: 3,
-            fillColor: [0.5, 0.5, 0.5, 1],
+            fillColor: [0.5, 0.5, 0.5, 0.01],
             drag: true,
         });
-
-        p.text = equation({
-            string: p.name || "Unnamed",
-            fontSize: "12px",
-            fillColor: [0.5, 0.5, 0.5, 1],
-        });
-
-        ensure(bloom.constraints.equal(bloom.ops.vdist(p.icon.center, p.text.center), 15));
     });
 
     // Connects
@@ -86,4 +78,59 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
 
     //     ensure(bloom.constraints.greaterThan(dotProduct, 5));
     // });
+
+    forallWhere(
+        { s: domain.Edge },
+        ({ s }) => domain.LabelPredicate.test(s),
+        ({ s }) => {
+            const center = bloom.ops.vdiv(bloom.ops.vadd(s.icon.start, s.icon.end), 2);
+
+            
+            const edgeNormalVector = bloom.ops.vnormalize(bloom.ops.vsub(s.icon.end, s.icon.start));
+            // edgeNormalVector 에 수직한 벡터
+            const perpendicularVector = [edgeNormalVector[1], bloom.mul(-1, edgeNormalVector[0])];
+
+            // edge에 수직하고 center를 지나는 선분을 생성
+            // edge의 방향 벡터를 정규화
+
+            s.path = path({
+                d: bloom.makePath(s.icon.start, s.icon.end, 30, 0),
+                fillColor: [0.5, 0.5, 0.5, 0],
+                strokeColor: [0, 0, 0, 1],
+                strokeWidth: 0.5,
+                strokeStyle: "dashed",
+                strokeDasharray: "2 2",
+            });
+
+            s.circle = circle({
+                r: 10,
+                fillColor: [1, 1, 1, 1],
+            })
+
+            s.text = equation({
+                string: s.label || "d",
+                fontSize: "12px",
+                fillColor: [0.5, 0.5, 0.5, 1],
+                ensureOnCanvas: false,
+            });
+
+    
+            // s.text.center = center;
+            ensure(bloom.constraints.equal(bloom.ops.vdist(
+                s.text.center,
+                bloom.ops.vadd(center, bloom.ops.vmul(15, perpendicularVector))
+            ), 0));
+            ensure(bloom.constraints.equal(bloom.ops.vdist(s.circle.center, s.text.center), 0));
+        }
+    );
+
+    forall({ p: domain.Point }, ({ p }) => {
+        p.text = equation({
+            string: p.label || "Unnamed",
+            fontSize: "12px",
+            fillColor: [0.5, 0.5, 0.5, 1],
+        });
+
+        ensure(bloom.constraints.equal(bloom.ops.vdist(p.icon.center, p.text.center), 15));
+    });
 };
