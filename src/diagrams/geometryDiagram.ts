@@ -73,7 +73,11 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
     const B = Point();
     const C = Point();
 
-    const H = Point();
+    const D = Point();
+    const E = Point();
+    const F = Point();
+
+    const G = Point();
 
     // 선분들 생성
     const AB = Segment(A, B);
@@ -81,18 +85,32 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
     const AC = Segment(A, C);
 
     // A에서 BC에 수직인 선분 AH 생성
-    const AH = Segment(A, H);
-    Perpendicular(BC, AH);
-    On(H, BC);
+    const AD = Segment(A, D);
+    Perpendicular(BC, AD);
+    const BE = Segment(B, E);
+    Perpendicular(AC, BE);
+    const CF = Segment(C, F);
+    Perpendicular(AB, CF);
+
+    On(D, BC);
+    On(E, AC);
+    On(F, AB);
+
+    On(G, AD);
+    On(G, BE);
+    On(G, CF);
 
     A.name = "A";
     B.name = "B";
     C.name = "C";
-    H.name = "H";
+    D.name = "D";
+    E.name = "E";
+    F.name = "F";
+    G.name = "G";
 
 
     return {
-        A, B, C, AB, BC, AC, AH, H, Perpendicular, On,
+        A, B, C, AB, BC, AC, AD, BE, CF, D, E, F, G, Perpendicular, On,
     };
 };
 
@@ -104,6 +122,7 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
 const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
     const { ensure, forall, forallWhere, circle, line, text, polygon, layer, equation, input, encourage } = db;
 
+    // Point
     forall({ p: domain.Point }, ({ p }) => {
         p.icon = circle({
             r: 3,
