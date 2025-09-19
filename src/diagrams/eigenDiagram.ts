@@ -393,7 +393,7 @@ const applyStyle = (
     forall({ e: domain.EigenspaceLine }, ({ e }, i) => {
         e.icon = line({
             start: origin,
-            end: bloom.ops.vadd(bloom.ops.vmul(1000, e.vec), origin) as [number, number],
+            end: bloom.ops.vadd(bloom.ops.vmul(400, e.vec), origin) as [number, number],
             strokeWidth: 2,
             strokeColor: [0.6, 0.6, 0.6, 0.8],
         });

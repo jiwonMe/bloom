@@ -4,10 +4,11 @@ import BloomRenderer from "@/components/BloomRenderer";
 import { createArrowDiagram } from "@/diagrams/arrowDiagram";
 import { createCircleDiagram } from "@/diagrams/circleDiagram";
 import { createEigenDiagram } from "@/diagrams/eigenDiagram";
+import { createGeometryDiagram } from "@/diagrams/geometryDiagram";
 import { cn } from "@/lib/utils";
 
 // 다이어그램 타입 정의
-type DiagramType = "arrow" | "circle" | "eigen";
+type DiagramType = "arrow" | "circle" | "eigen" | "geometry";
 
 interface DiagramConfig {
   id: DiagramType;
@@ -42,6 +43,12 @@ const DiagramGallery: React.FC = () => {
       title: "고유벡터 다이어그램",
       description: "선형 변환의 고유벡터와 고유공간을 시각화",
       buildFunction: createEigenDiagram,
+    },
+    {
+      id: "geometry",
+      title: "기하학 다이어그램",
+      description: "원과 현, 반지름, 수직이등분선을 포함한 복잡한 기하학적 구조",
+      buildFunction: createGeometryDiagram,
     },
   ];
 
@@ -154,17 +161,19 @@ const DiagramGallery: React.FC = () => {
             className={cn(
               // 렌더러 스타일
               "border-2 border-gray-200",
-              "rounded-xl bg-gray-50",
+              "rounded-xl bg-white",
               // 상호작용 효과
               "hover:border-blue-300 transition-colors duration-200"
             )}
             width={
               selectedDiagram === "circle" ? 500 : 
-              selectedDiagram === "eigen" ? 500 : 400
+              selectedDiagram === "eigen" ? 500 : 
+              selectedDiagram === "geometry" ? 500 : 400
             }
             height={
               selectedDiagram === "circle" ? 500 : 
-              selectedDiagram === "eigen" ? 400 : 400
+              selectedDiagram === "eigen" ? 400 :
+              selectedDiagram === "geometry" ? 500 : 400
             }
           />
         </div>
@@ -189,6 +198,8 @@ const DiagramGallery: React.FC = () => {
               💡 {
                 selectedDiagram === "eigen" 
                   ? "기저벡터와 점을 드래그하여 선형 변환을 조작할 수 있습니다"
+                  : selectedDiagram === "geometry"
+                  ? "점들을 드래그하여 기하학적 관계를 탐색할 수 있습니다"
                   : "원을 드래그하여 이동시킬 수 있습니다"
               }
             </p>
