@@ -35,14 +35,13 @@ const defineDomain = (db: DiagramBuilder) => {
     // 기본 도형 타입들
     const Point = db.type();
 
-    // AS IS:
-    const SegmentAbstract = db.type();
+    const Edge = db.type();
     const Connects = db.predicate();
 
     const Segment = (pointA: Substance, pointB: Substance) => {
-        const segment = SegmentAbstract();
-        Connects(segment, pointA, pointB);
-        return segment;
+        const edge = Edge();
+        Connects(edge, pointA, pointB);
+        return edge;
     };
 
     const Perpendicular = db.predicate();
@@ -52,7 +51,7 @@ const defineDomain = (db: DiagramBuilder) => {
     const Label = db.predicate();
 
     return {
-        Point, Segment, SegmentAbstract, Connects, Perpendicular, On, Label,
+        Point, Segment, Edge, Connects, Perpendicular, On, Label,
     };
 };
 
@@ -141,7 +140,7 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
 
     // Connects
     forallWhere(
-        { s: domain.SegmentAbstract, p: domain.Point, q: domain.Point },
+        { s: domain.Edge, p: domain.Point, q: domain.Point },
         ({ s, p, q }) => domain.Connects.test(s, p, q),
         ({ s, p, q }) => {
             s.icon = line({
@@ -157,7 +156,7 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
 
     // On
     forallWhere(
-        { s: domain.SegmentAbstract, p: domain.Point },
+        { s: domain.Edge, p: domain.Point },
         ({ s, p }) => domain.On.test(p, s),
         ({ s, p }) => {
             const v1 = bloom.ops.vsub(p.icon.center, s.icon.start);
@@ -172,7 +171,7 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
 
     // Perpendicular
     forallWhere(
-        { s1: domain.SegmentAbstract, s2: domain.SegmentAbstract },
+        { s1: domain.Edge, s2: domain.Edge },
         ({ s1, s2 }) => domain.Perpendicular.test(s1, s2),
         ({ s1, s2 }) => {
             const v1 = bloom.ops.vnormalize(bloom.ops.vsub(s1.icon.start, s1.icon.end));
@@ -185,7 +184,7 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
     );
 
     // Point Label과 Segment 사이의 거리 제약조건
-    // forall({ s: domain.SegmentAbstract, p: domain.Point }, ({ s, p }) => {
+    // forall({ s: domain.Edge, p: domain.Point }, ({ s, p }) => {
     //     const v1 = bloom.ops.vsub(s.icon.start, s.icon.end);
     //     const v2 = bloom.ops.vsub(p.icon.center, s.icon.start);
 
