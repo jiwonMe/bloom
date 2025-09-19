@@ -144,6 +144,83 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
         }
     );
 
+    // Incircle: 내접원 그리기
+    forallWhere(
+        { c: domain.Circle, p1: domain.Point, p2: domain.Point, p3: domain.Point },
+        ({ c, p1, p2, p3 }) => domain.DrawIncircle.test(c, p1, p2, p3),
+        ({ c, p1, p2, p3 }) => {
+            // 세 점의 좌표 추출
+            const x1 = p1.icon.center[0];
+            const y1 = p1.icon.center[1];
+            const x2 = p2.icon.center[0];
+            const y2 = p2.icon.center[1];
+            const x3 = p3.icon.center[0];
+            const y3 = p3.icon.center[1];
+            
+            // 삼각형의 변의 길이 계산
+            const a = bloom.ops.vdist(p2.icon.center, p3.icon.center); // BC
+            const b = bloom.ops.vdist(p1.icon.center, p3.icon.center); // AC
+            const c_side = bloom.ops.vdist(p1.icon.center, p2.icon.center); // AB
+            
+            // 둘레 계산
+            const perimeter = bloom.add(bloom.add(a, b), c_side);
+            
+            // 내심 좌표 계산 (무게중심 공식 사용)
+            // Ix = (a*x1 + b*x2 + c*x3) / (a + b + c)
+            // Iy = (a*y1 + b*y2 + c*y3) / (a + b + c)
+            const incenter_x = bloom.div(
+                bloom.add(
+                    bloom.add(
+                        bloom.mul(a, x1),
+                        bloom.mul(b, x2)
+                    ),
+                    bloom.mul(c_side, x3)
+                ),
+                perimeter
+            );
+            
+            const incenter_y = bloom.div(
+                bloom.add(
+                    bloom.add(
+                        bloom.mul(a, y1),
+                        bloom.mul(b, y2)
+                    ),
+                    bloom.mul(c_side, y3)
+                ),
+                perimeter
+            );
+            
+            const incenter = [incenter_x, incenter_y];
+            
+            // 내접원의 반지름 계산
+            // r = Area / s (s는 반둘레)
+            const s = bloom.div(perimeter, 2); // 반둘레
+            
+            // 헤론의 공식으로 넓이 계산
+            // Area = sqrt(s * (s-a) * (s-b) * (s-c))
+            const area = bloom.sqrt(
+                bloom.mul(
+                    bloom.mul(
+                        bloom.mul(s, bloom.sub(s, a)),
+                        bloom.sub(s, b)
+                    ),
+                    bloom.sub(s, c_side)
+                )
+            );
+            
+            const inradius = bloom.div(area, s);
+            
+            c.circle = circle({
+                r: inradius,
+                fillColor: [0, 0, 0, 0],
+                center: incenter as [number, number],
+                strokeColor: [0, 0, 0, 1],
+                strokeWidth: 1,
+                ensureOnCanvas: false,
+            })
+        }
+    );
+
     // On
     forallWhere(
         { s: domain.Edge, p: domain.Point },

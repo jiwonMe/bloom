@@ -113,6 +113,28 @@ export const defineDomain = (db: DiagramBuilder) => {
         return circle;
     };
 
+    /**
+     * DrawIncircle 술어
+     * 세 점을 지나는 내접원을 그리는 관계를 나타냅니다.
+     * 사용법: DrawIncircle(circle, pointA, pointB, pointC)
+     */
+    const DrawIncircle = db.predicate();
+
+    /**
+     * Incircle 헬퍼 함수
+     * 세 점을 지나는 내접원을 생성합니다.
+     * 
+     * @param pointA 첫 번째 점
+     * @param pointB 두 번째 점
+     * @param pointC 세 번째 점
+     * @returns Circle 인스턴스
+     */
+    const Incircle = (pointA: Substance, pointB: Substance, pointC: Substance) => {
+        const circle = Circle();
+        DrawIncircle(circle, pointA, pointB, pointC);
+        return circle;
+    };
+
     // ===== 기하학적 관계 술어들 =====
     
     /**
@@ -162,6 +184,7 @@ export const defineDomain = (db: DiagramBuilder) => {
         Segment,         // 선분 생성 함수
         CircleRadius,    // 원 생성 함수
         Circumcircle,    // 외접원 생성 함수
+        Incircle,        // 내접원 생성 함수
         Label,           // 라벨 추가 함수
         
         // 술어들
@@ -170,6 +193,7 @@ export const defineDomain = (db: DiagramBuilder) => {
         On,              // 위치 관계
         DrawCircleWithRadius, // 원 그리기 관계
         DrawCircumcircle, // 외접원 그리기 관계
+        DrawIncircle, // 내접원 그리기 관계
         LabelPredicate   // 라벨 관계
     };
 };
