@@ -45,8 +45,12 @@ const defineDomain = (db: DiagramBuilder) => {
         return segment;
     };
 
+    const Perpendicular = db.predicate();
+
+    const On = db.predicate();
+
     return {
-        Point, Segment, SegmentAbstract, Connects,
+        Point, Segment, SegmentAbstract, Connects, Perpendicular, On,
     };
 };
 
@@ -59,7 +63,7 @@ const defineDomain = (db: DiagramBuilder) => {
  */
 const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
     const {
-        Point, Segment,
+        Point, Segment, On,
     } = domain;
 
 
@@ -68,13 +72,21 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
     const B = Point();
     const C = Point();
 
+    const H = Point();
+
     // 선분들 생성
     const AB = Segment(A, B);
     const BC = Segment(B, C);
     const AC = Segment(A, C);
 
+    // A에서 BC에 수직인 선분 AH 생성
+    const AH = Segment(A, H);
+
+    On(H, BC);
+
+
     return {
-        A, B, C, AB, BC, AC,
+        A, B, C, AB, BC, AC, AH, H,
     };
 };
 
@@ -94,6 +106,7 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
         });
     });
 
+    // Connects
     forallWhere(
         { s: domain.SegmentAbstract, p: domain.Point, q: domain.Point },
         ({ s, p, q }) => domain.Connects.test(s, p, q),
@@ -105,6 +118,21 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
                 strokeColor: [0.5, 0.5, 0.5, 1],
                 strokeWidth: 1,
             });
+        }
+    );
+
+    // On
+    forallWhere(
+        { s: domain.SegmentAbstract, p: domain.Point },
+        ({ s, p }) => domain.On.test(p, s),
+        ({ s, p }) => {
+            const v1 = bloom.ops.vsub(p.icon.center, s.icon.start);
+            const v1Norm = bloom.ops.vnormalize(v1);    
+            const v2 = bloom.ops.vsub(s.icon.end, p.icon.center);
+            const v2Norm = bloom.ops.vnormalize(v2);
+
+            const distance = bloom.ops.vdist(v1Norm, v2Norm);
+            ensure(bloom.constraints.equal(distance, 0));
         }
     );
 };
