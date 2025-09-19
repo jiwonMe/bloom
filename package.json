@@ -1,0 +1,39 @@
+{
+  "name": "bloom",
+  "version": "1.0.0",
+  "description": "Bloom project with Vite",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview"
+  },
+  "keywords": [
+    "vite",
+    "bloom",
+    "penrose"
+  ],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "@penrose/bloom": "4.0.0-alpha.5",
+    "@penrose/core": "^3.2.0",
+    "clsx": "^2.1.1",
+    "markdown-it": "^14.1.0",
+    "markdown-it-katex": "^2.0.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwind-merge": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "typescript": "^5.7.2",
+    "vite": "^7.1.6"
+  }
+}
