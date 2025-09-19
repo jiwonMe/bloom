@@ -23,6 +23,7 @@ interface DiagramConfig {
  */
 const DiagramGallery: React.FC = () => {
   const [selectedDiagram, setSelectedDiagram] = useState<DiagramType>("geometry");
+  const [fontSize, setFontSize] = useState<number>(12);
 
   // 다이어그램 설정 배열
   const diagrams: DiagramConfig[] = [
@@ -57,7 +58,13 @@ const DiagramGallery: React.FC = () => {
 
   // useDiagram 훅 사용 - 선택된 다이어그램에 따라 동적으로 변경
   const diagram = useDiagram(
-    useCallback(() => currentConfig.buildFunction(), [selectedDiagram])
+    useCallback(() => {
+      // geometry 다이어그램의 경우 fontSize 파라미터 전달
+      if (selectedDiagram === "geometry") {
+        return createGeometryDiagram(fontSize);
+      }
+      return currentConfig.buildFunction();
+    }, [selectedDiagram, fontSize])
   );
 
   return (
@@ -150,6 +157,75 @@ const DiagramGallery: React.FC = () => {
             {currentConfig.description}
           </p>
         </div>
+
+        {/* Geometry 다이어그램용 폰트 크기 슬라이더 */}
+        {selectedDiagram === "geometry" && (
+          <div className={cn(
+            // 슬라이더 컨테이너
+            "mb-6 px-8",
+            "bg-gray-50 rounded-lg p-4"
+          )}>
+            <div className={cn(
+              // 슬라이더 레이블
+              "flex items-center justify-between mb-2"
+            )}>
+              <label className={cn(
+                // 레이블 텍스트
+                "text-sm font-medium text-gray-700"
+              )}>
+                라벨 텍스트 크기
+              </label>
+              <span className={cn(
+                // 현재 값 표시
+                "text-sm font-semibold text-blue-600",
+                "bg-blue-50 px-2 py-1 rounded"
+              )}>
+                {fontSize}px
+              </span>
+            </div>
+            <input
+              type="range"
+              min="8"
+              max="24"
+              step="1"
+              value={fontSize}
+              onChange={(e) => setFontSize(Number(e.target.value))}
+              className={cn(
+                // 슬라이더 스타일
+                "w-full h-2 bg-gray-200 rounded-lg",
+                "appearance-none cursor-pointer",
+                // 커스텀 슬라이더 트랙
+                "[&::-webkit-slider-track]:rounded-lg",
+                "[&::-webkit-slider-track]:bg-gray-200",
+                // 커스텀 슬라이더 썸
+                "[&::-webkit-slider-thumb]:appearance-none",
+                "[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4",
+                "[&::-webkit-slider-thumb]:rounded-full",
+                "[&::-webkit-slider-thumb]:bg-blue-600",
+                "[&::-webkit-slider-thumb]:shadow-md",
+                "[&::-webkit-slider-thumb]:hover:bg-blue-700",
+                "[&::-webkit-slider-thumb]:transition-colors",
+                // Firefox 지원
+                "[&::-moz-range-track]:rounded-lg",
+                "[&::-moz-range-track]:bg-gray-200",
+                "[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4",
+                "[&::-moz-range-thumb]:rounded-full",
+                "[&::-moz-range-thumb]:bg-blue-600",
+                "[&::-moz-range-thumb]:border-0",
+                "[&::-moz-range-thumb]:shadow-md",
+                "[&::-moz-range-thumb]:hover:bg-blue-700",
+                "[&::-moz-range-thumb]:transition-colors"
+              )}
+            />
+            <div className={cn(
+              // 슬라이더 값 범위 표시
+              "flex justify-between mt-1"
+            )}>
+              <span className="text-xs text-gray-500">8px</span>
+              <span className="text-xs text-gray-500">24px</span>
+            </div>
+          </div>
+        )}
 
         {/* 다이어그램 렌더러 */}
         <div className={cn(

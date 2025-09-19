@@ -11,8 +11,13 @@ type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
  * 스타일 적용 함수
  * 
  * 기하학적 도형들에 시각적 스타일을 적용합니다.
+ * @param fontSize - 라벨 텍스트 크기 (기본값: 12px)
  */
-export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
+export const applyStyle = (
+    db: DiagramBuilder, 
+    domain: ReturnType<typeof defineDomain>,
+    fontSize: number = 12
+) => {
     const { ensure, forall, forallWhere, circle, line, text, polygon, layer, equation, input, encourage, path } = db;
 
     // Point
@@ -221,7 +226,7 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
         }
     );
 
-    // On
+    // On Edge
     forallWhere(
         { s: domain.Edge, p: domain.Point },
         ({ s, p }) => domain.On.test(p, s),
@@ -233,6 +238,25 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
 
             const distance = bloom.ops.vdist(v1Norm, v2Norm);
             ensure(bloom.constraints.equal(distance, 0));
+        }
+    );
+
+    // On Circle
+    forallWhere(
+        { c: domain.Circle, p: domain.Point },
+        ({ c, p }) => domain.On.test(p, c),
+        ({ c, p }) => {
+            ensure(bloom.constraints.equal(bloom.ops.vdist(p.icon.center, c.circle.center), c.circle.r));
+        }
+    );
+
+    // NotEqual
+    forallWhere(
+        { p1: domain.Point, p2: domain.Point },
+        ({ p1, p2 }) => domain.NotEqual.test(p1, p2),
+        ({ p1, p2 }) => {
+            // ensure(bloom.constraints.greaterThan(bloom.ops.vdist(p1.icon.center, p2.icon.center), 10));
+            ensure(bloom.constraints.disjoint(p1.icon, p2.icon, 5));
         }
     );
 
@@ -280,7 +304,7 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
 
             s.text = equation({
                 string: s.label || "d",
-                fontSize: "12px",
+                fontSize: `${fontSize}px`,
                 fillColor: [0.5, 0.5, 0.5, 1],
                 ensureOnCanvas: false,
             });
@@ -298,7 +322,7 @@ export const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineD
     forall({ p: domain.Point }, ({ p }) => {
         p.text = equation({
             string: p.label || "Unnamed",
-            fontSize: "12px",
+            fontSize: `${fontSize}px`,
             fillColor: [0.5, 0.5, 0.5, 1],
         });
 

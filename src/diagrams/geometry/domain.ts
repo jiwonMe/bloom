@@ -42,6 +42,8 @@ export const defineDomain = (db: DiagramBuilder) => {
      * 선분, 직선, 곡선 등을 표현할 수 있습니다.
      */
     const Edge = db.type();
+
+    const Shape = db.type();
     
     /**
      * Connects 술어
@@ -151,6 +153,13 @@ export const defineDomain = (db: DiagramBuilder) => {
      */
     const On = db.predicate();
 
+    /**
+     * NotEqual 술어
+     * 두 점이 서로 다른 점임을 나타내는 관계입니다.
+     * 사용법: NotEqual(point1, point2)
+     */
+    const NotEqual = db.predicate();
+
     // ===== 라벨링 시스템 =====
     
     /**
@@ -194,6 +203,7 @@ export const defineDomain = (db: DiagramBuilder) => {
         DrawCircleWithRadius, // 원 그리기 관계
         DrawCircumcircle, // 외접원 그리기 관계
         DrawIncircle, // 내접원 그리기 관계
-        LabelPredicate   // 라벨 관계
+        LabelPredicate,   // 라벨 관계
+        NotEqual,         // 다른 점 관계
     };
 };
