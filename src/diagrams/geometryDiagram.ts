@@ -63,7 +63,7 @@ const defineDomain = (db: DiagramBuilder) => {
  */
 const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
     const {
-        Point, Segment, On,
+        Point, Segment, On, Perpendicular,
     } = domain;
 
 
@@ -81,12 +81,12 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
 
     // A에서 BC에 수직인 선분 AH 생성
     const AH = Segment(A, H);
-
+    Perpendicular(BC, AH);
     On(H, BC);
 
 
     return {
-        A, B, C, AB, BC, AC, AH, H,
+        A, B, C, AB, BC, AC, AH, H, Perpendicular, On,
     };
 };
 
@@ -96,7 +96,7 @@ const defineSubstance = (_db: DiagramBuilder, domain: ReturnType<typeof defineDo
  * 기하학적 도형들에 시각적 스타일을 적용합니다.
  */
 const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>) => {
-    const { ensure, forall, forallWhere, circle, line, text, polygon } = db;
+    const { ensure, forall, forallWhere, circle, line, text, polygon, layer } = db;
 
     forall({ p: domain.Point }, ({ p }) => {
         p.icon = circle({
@@ -133,6 +133,20 @@ const applyStyle = (db: DiagramBuilder, domain: ReturnType<typeof defineDomain>)
 
             const distance = bloom.ops.vdist(v1Norm, v2Norm);
             ensure(bloom.constraints.equal(distance, 0));
+        }
+    );
+
+    // Perpendicular
+    forallWhere(
+        { s1: domain.SegmentAbstract, s2: domain.SegmentAbstract },
+        ({ s1, s2 }) => domain.Perpendicular.test(s1, s2),
+        ({ s1, s2 }) => {
+            const v1 = bloom.ops.vnormalize(bloom.ops.vsub(s1.icon.start, s1.icon.end));
+            const v2 = bloom.ops.vnormalize(bloom.ops.vsub(s2.icon.start, s2.icon.end));
+
+            const dotProduct = bloom.ops.vdot(v1, v2);
+
+            ensure(bloom.constraints.equal(dotProduct, 0));
         }
     );
 };
